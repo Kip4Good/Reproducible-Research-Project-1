@@ -16,7 +16,7 @@ histogram**
     total_steps <- aggregate(steps ~ date, activity_data, sum)
     hist(total_steps$steps, xlab= "Total Steps Taken per Day", col="blue", breaks = 10)
 
-![](./PA1_template_files/figure/unnamed-chunk-2-1.png)
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-2-1.png)
 
 **Calculate the mean and median of the total number of steps taken per
 day**
@@ -44,7 +44,7 @@ day**
            las=2,
            par.settings=list(layout.heights=list(top.padding=3, bottom.padding=5)))
 
-![](./PA1_template_files/figure/unnamed-chunk-4-1.png)
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-4-1.png)
 
     names(which.max(x=avg_steps_interval))
 
@@ -98,7 +98,7 @@ day**
     new_total <- aggregate(steps ~ date, new_data, sum)
     hist(new_total$steps, xlab= "Total Steps Taken per Day", main="", col="blue", breaks = 10)
 
-![](./PA1_template_files/figure/unnamed-chunk-6-1.png)
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
@@ -108,4 +108,4 @@ day**
     library(lattice)
     xyplot( steps ~ interval | dayTypeInWeek, data = avgStepdayTypeInWeek, type="l", layout=c(1,2), xlab="Interval", ylab="Number of Steps")
 
-![](./PA1_template_files/figure/unnamed-chunk-7-1.png)
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-7-1.png)
