@@ -1,0 +1,103 @@
+---
+title: 'Reproducible Research: Peer Assessment 1'
+output: html_document
+---
+
+###Loading and preprocessing the data
+
+
+```{r, eval=FALSE}
+library(lubridate)
+activity_data <- read.csv("./activity.csv")
+activity_data$data <- as.Date(activity_data$date, format="%Y-%m-%d")
+activity_data$weekday <- wday(activity_data$date, label=T,abbr=T)
+activity_data$weekday <- as.factor(activity_data$weekday)
+activity_data$interval <- as.factor(activity_data$interval)
+days <- as.factor(activity_data$date)
+```
+
+
+###What is mean total number of steps taken per day?
+
+
+**Calculate the total number of steps taken per day and create a histogram**
+```{r, eval=FALSE}
+total_steps <- aggregate(steps ~ date, activity_data, sum)
+hist(total_steps$steps, xlab= "Total Steps Taken per Day", col="blue", breaks = 10)
+```
+
+**Calculate the mean and median of the total number of steps taken per day**
+```{r, eval=FALSE}
+mean(total_steps$steps)
+median(total_steps$steps)
+```
+
+
+###What is the average daily activity pattern?
+
+```{r, eval=FALSE}
+interval_split <- split(x=activity_data,f=activity_data$date)
+interval_split <- interval_split[[1]]['interval']
+
+library(lattice)
+avg_steps_interval <- tapply(activity_data$steps, activity_data$interval, mean, na.rm=T )
+
+xyplot(avg_steps_interval ~ interval_split,
+       type="l",
+       ylab="Mean Steps",
+       xlab="Intervals",
+       las=2,
+       par.settings=list(layout.heights=list(top.padding=3, bottom.padding=5)))
+       
+names(which.max(x=avg_steps_interval))
+```
+
+**Total number of missing values**
+```{r, eval=FALSE}
+average <- tapply(activity_data$steps, activity_data$weekday, mean, na.rm=T )
+total_NA <- activity_data[is.na(activity_data$steps),]
+length(total_NA$steps)
+
+days <- as.factor(activity_data$date)
+X <- split(activity_data, days)
+
+for(i in 1:length(X))
+{
+  for(j in 1:length(X[[i]][,'steps']))
+  {
+    if(is.na(X[[i]][j,'steps']))
+    {
+      new_day <- X[[i]][j,'date']
+      X[[i]][j,'steps'] <- average[wday(new_day)]
+    }  
+  }
+}
+
+new_data <- data.frame(steps={},
+                         date={},
+                         interval={})
+for(i in 1:length(X))
+{
+  new_data <- rbind(new_data, data.frame(steps=X[[i]]['steps'],
+                                             date=X[[i]]['date'],
+                                             interval=X[[i]]['interval']))
+}
+```
+
+**Calculate a new mean, median, total, and create a histogram**
+```{r, eval=FALSE}
+tapply(new_data$steps, activity_data$weekday, mean, na.rm=T )
+tapply(new_data$steps, activity_data$weekday, median, na.rm=T )
+new_total <- aggregate(steps ~ date, new_data, sum)
+hist(new_total$steps, xlab= "Total Steps Taken per Day", main="", col="blue", breaks = 10)
+```
+
+###Are there differences in activity patterns between weekdays and weekends?
+
+```{r, eval=FALSE}
+new_data['dayTypeInWeek'] = factor(sapply(new_data$date, function(x){ if (wday(x) == 6 | wday(x) == 7) { "weekend" } else { "weekday"} }))
+avgStepdayTypeInWeek = aggregate(steps~interval + dayTypeInWeek, mean, data=new_data)
+
+library(lattice)
+xyplot( steps ~ interval | dayTypeInWeek, data = avgStepdayTypeInWeek, type="l", layout=c(1,2), xlab="Interval", ylab="Number of Steps")
+```
