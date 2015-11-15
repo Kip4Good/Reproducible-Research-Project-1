@@ -1,12 +1,12 @@
 ---
 title: 'Reproducible Research: Peer Assessment 1'
-output: html_document
+output: md_document
 ---
 
 ###Loading and preprocessing the data
 
 
-```{r, eval=FALSE}
+```{r}
 library(lubridate)
 activity_data <- read.csv("./activity.csv")
 activity_data$data <- as.Date(activity_data$date, format="%Y-%m-%d")
@@ -21,13 +21,13 @@ days <- as.factor(activity_data$date)
 
 
 **Calculate the total number of steps taken per day and create a histogram**
-```{r, eval=FALSE}
+```{r}
 total_steps <- aggregate(steps ~ date, activity_data, sum)
 hist(total_steps$steps, xlab= "Total Steps Taken per Day", col="blue", breaks = 10)
 ```
 
 **Calculate the mean and median of the total number of steps taken per day**
-```{r, eval=FALSE}
+```{r}
 mean(total_steps$steps)
 median(total_steps$steps)
 ```
@@ -35,7 +35,7 @@ median(total_steps$steps)
 
 ###What is the average daily activity pattern?
 
-```{r, eval=FALSE}
+```{r}
 interval_split <- split(x=activity_data,f=activity_data$date)
 interval_split <- interval_split[[1]]['interval']
 
@@ -53,7 +53,7 @@ names(which.max(x=avg_steps_interval))
 ```
 
 **Total number of missing values**
-```{r, eval=FALSE}
+```{r}
 average <- tapply(activity_data$steps, activity_data$weekday, mean, na.rm=T )
 total_NA <- activity_data[is.na(activity_data$steps),]
 length(total_NA$steps)
@@ -85,7 +85,7 @@ for(i in 1:length(X))
 ```
 
 **Calculate a new mean, median, total, and create a histogram**
-```{r, eval=FALSE}
+```{r}
 tapply(new_data$steps, activity_data$weekday, mean, na.rm=T )
 tapply(new_data$steps, activity_data$weekday, median, na.rm=T )
 new_total <- aggregate(steps ~ date, new_data, sum)
@@ -94,7 +94,7 @@ hist(new_total$steps, xlab= "Total Steps Taken per Day", main="", col="blue", br
 
 ###Are there differences in activity patterns between weekdays and weekends?
 
-```{r, eval=FALSE}
+```{r}
 new_data['dayTypeInWeek'] = factor(sapply(new_data$date, function(x){ if (wday(x) == 6 | wday(x) == 7) { "weekend" } else { "weekday"} }))
 avgStepdayTypeInWeek = aggregate(steps~interval + dayTypeInWeek, mean, data=new_data)
 
