@@ -1,0 +1,111 @@
+### Loading and preprocessing the data
+
+    library(lubridate)
+    activity_data <- read.csv("./activity.csv")
+    activity_data$data <- as.Date(activity_data$date, format="%Y-%m-%d")
+    activity_data$weekday <- wday(activity_data$date, label=T,abbr=T)
+    activity_data$weekday <- as.factor(activity_data$weekday)
+    activity_data$interval <- as.factor(activity_data$interval)
+    days <- as.factor(activity_data$date)
+
+### What is mean total number of steps taken per day?
+
+**Calculate the total number of steps taken per day and create a
+histogram**
+
+    total_steps <- aggregate(steps ~ date, activity_data, sum)
+    hist(total_steps$steps, xlab= "Total Steps Taken per Day", col="blue", breaks = 10)
+
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+
+**Calculate the mean and median of the total number of steps taken per
+day**
+
+    mean(total_steps$steps)
+
+    ## [1] 10766.19
+
+    median(total_steps$steps)
+
+    ## [1] 10765
+
+### What is the average daily activity pattern?
+
+    interval_split <- split(x=activity_data,f=activity_data$date)
+    interval_split <- interval_split[[1]]['interval']
+
+    library(lattice)
+    avg_steps_interval <- tapply(activity_data$steps, activity_data$interval, mean, na.rm=T )
+
+    xyplot(avg_steps_interval ~ interval_split,
+           type="l",
+           ylab="Mean Steps",
+           xlab="Intervals",
+           las=2,
+           par.settings=list(layout.heights=list(top.padding=3, bottom.padding=5)))
+
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-4-1.png)
+
+    names(which.max(x=avg_steps_interval))
+
+    ## [1] "835"
+
+**Total number of missing values**
+
+    average <- tapply(activity_data$steps, activity_data$weekday, mean, na.rm=T )
+    total_NA <- activity_data[is.na(activity_data$steps),]
+    length(total_NA$steps)
+
+    ## [1] 2304
+
+    days <- as.factor(activity_data$date)
+    X <- split(activity_data, days)
+
+    for(i in 1:length(X))
+    {
+      for(j in 1:length(X[[i]][,'steps']))
+      {
+        if(is.na(X[[i]][j,'steps']))
+        {
+          new_day <- X[[i]][j,'date']
+          X[[i]][j,'steps'] <- average[wday(new_day)]
+        }  
+      }
+    }
+
+    new_data <- data.frame(steps={},
+                             date={},
+                             interval={})
+    for(i in 1:length(X))
+    {
+      new_data <- rbind(new_data, data.frame(steps=X[[i]]['steps'],
+                                                 date=X[[i]]['date'],
+                                                 interval=X[[i]]['interval']))
+    }
+
+**Calculate a new mean, median, total, and create a histogram**
+
+    tapply(new_data$steps, activity_data$weekday, mean, na.rm=T )
+
+    ##      Sun      Mon     Tues      Wed    Thurs      Fri      Sat 
+    ## 42.63095 34.63492 31.07485 40.94010 28.51649 42.91567 43.52579
+
+    tapply(new_data$steps, activity_data$weekday, median, na.rm=T )
+
+    ##   Sun   Mon  Tues   Wed Thurs   Fri   Sat 
+    ##     0     0     0     0     0     0     0
+
+    new_total <- aggregate(steps ~ date, new_data, sum)
+    hist(new_total$steps, xlab= "Total Steps Taken per Day", main="", col="blue", breaks = 10)
+
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+
+### Are there differences in activity patterns between weekdays and weekends?
+
+    new_data['dayTypeInWeek'] = factor(sapply(new_data$date, function(x){ if (wday(x) == 6 | wday(x) == 7) { "weekend" } else { "weekday"} }))
+    avgStepdayTypeInWeek = aggregate(steps~interval + dayTypeInWeek, mean, data=new_data)
+
+    library(lattice)
+    xyplot( steps ~ interval | dayTypeInWeek, data = avgStepdayTypeInWeek, type="l", layout=c(1,2), xlab="Interval", ylab="Number of Steps")
+
+![](./PA1_template_files/figure-markdown_strict/unnamed-chunk-7-1.png)
